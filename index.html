@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>home</title>
+  <style>
+  html,body {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #f2f2f2;
+    background-image: url(http://area.sinaapp.com/bingImg/);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: All 3s ease;
+  }
+  h1 {
+    margin: 80px;
+    text-align: center
+  }
+  </style>
+</head>
+<body>
+  
+  <script>
+
+    let imgs = []
+    let loads = []
+    let img = new Image()
+  
+    const fetchUrls = url => {
+      return fetch(url)
+        .then(res => res.json())
+        .then(ret => ret.images.map(i => 'https://cn.bing.com' + i.url))
+        .then(urls => imgs = imgs.concat(urls))
+    }
+
+    const wait = ms => {
+      return new Promise(resolve => {
+        window.setTimeout(resolve, ms)
+      })
+    }
+
+    const rd = () => (Math.random() * 15) >>> 0
+
+    const fetchImg = i => {
+      if(loads.indexOf(i)=== -1) {
+        return new Promise(resolve => {
+          img.src = imgs[i]
+          img.onload = _ => {
+            loads.push(i)
+            resolve(i)
+          }
+          img.onerror = _ => resolve(loads[0])
+        })
+      } else {
+        return Promise.resolve(i)
+      }
+    }
+
+    const task = (el) => {
+      fetchImg(rd())
+      .then(i => wait(5000).then(_ => el.style['background-image'] = 'url('+ imgs[i] +')'))
+      .then(_ => task(el))
+    }
+
+    Promise.all([fetchUrls('https://jsonp.afeld.me/?url=https%3A%2F%2Fcn.bing.com%2FHPImageArchive.aspx%3Fformat%3Djs%26idx%3D0%26n%3D7'), fetchUrls('https://jsonp.afeld.me/?url=https%3A%2F%2Fcn.bing.com%2FHPImageArchive.aspx%3Fformat%3Djs%26idx%3D8%26n%3D8')])
+      .then(_ => task(document.body))
+  
+    // window.onerror = function(msg, url, line, col, error) {
+    //   document.body.innerHTML = '<h1>What happened!!!</h1>'
+    // }
+  </script>
+</body>
+</html>
